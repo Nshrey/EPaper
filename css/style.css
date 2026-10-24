@@ -78,3 +78,94 @@ input[type="date"] {
   min-width: 110px;
   color: #555;
 }
+#zoomView {
+  position: fixed;
+  inset: 0;
+  background: #222;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+#zoomView[hidden] {
+  display: none;
+}
+
+.zoom-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: #111;
+  color: white;
+}
+
+#zoomScroll {
+  flex: 1;
+  overflow: auto; /* lets you scroll around a zoomed page */
+}
+
+#zoomImg {
+  display: block;
+  margin: 0 auto;
+  max-width: none; /* allows the image to grow past the screen */
+}
+#loader {
+  max-width: 320px;
+  margin: 40px auto;
+}
+#loader[hidden] {
+  display: none;
+}
+
+.bar {
+  height: 8px;
+  background: #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+#loaderFill {
+  height: 100%;
+  width: 0%;
+  background: #8b0000;
+  transition: width 0.3s; /* makes the bar slide smoothly */
+}
+
+#loaderText {
+  color: #555;
+  font-size: 14px;
+}
+#thumbs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto; /* scroll sideways when there are many pages */
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 12px 4px;
+}
+
+.thumb {
+  flex: 0 0 auto; /* don't shrink thumbnails */
+  width: 70px;
+  padding: 0;
+  margin: 0;
+  background: none;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  color: #555;
+  font-size: 12px;
+}
+.thumb:hover {
+  background: none;
+  border-color: #ccc;
+}
+.thumb.active {
+  border-color: #8b0000;
+  color: #8b0000;
+}
+.thumb img {
+  width: 100%;
+  display: block;
+}

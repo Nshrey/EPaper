@@ -10,9 +10,13 @@ const bookArea = document.getElementById("bookArea");
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
 const pageInfo = document.getElementById("pageInfo");
+const thumbs = document.getElementById("thumbs");
 
 let currentRegion = "region-a"; // which region is selected
 let book = null; // the flipbook currently on screen
+let pageImages = []; // all page images, kept for zoom
+let zoomPage = 0; // which page is zoomed
+let zoomLevel = 1; // 1 = fit width, 2 = double, etc.
 
 // ===== 2. DATE HELPER (your code from before, as a reusable function) =====
 function formatDate(d) {
@@ -27,15 +31,19 @@ datePicker.value = formatDate(new Date());
 datePicker.max = datePicker.value;
 
 // ===== 3. LOAD AN EDITION =====
+const loader = document.getElementById("loader");
+const loaderFill = document.getElementById("loaderFill");
+const loaderText = document.getElementById("loaderText");
+
 async function loadEdition() {
   const pdfPath = "editions/" + currentRegion + "/" + datePicker.value + ".pdf";
   clearBook();
-  message.textContent = "Loading…";
+  message.textContent = "";
+  showLoader(0, "Opening paper…");
 
   try {
     const pdf = await pdfjsLib.getDocument({
       url: pdfPath,
-      // helps PDF.js show Hindi and other non-English fonts correctly
       cMapUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/",
       cMapPacked: true,
     }).promise;
@@ -45,7 +53,10 @@ async function loadEdition() {
       pageHeight = 0;
 
     for (let i = 1; i <= pdf.numPages; i++) {
-      message.textContent = "Loading page " + i + " of " + pdf.numPages + "…";
+      showLoader(
+        (i - 1) / pdf.numPages,
+        "Loading page " + i + " of " + pdf.numPages,
+      );
       const result = await pageToImage(pdf, i);
       images.push(result.image);
       if (i === 1) {
@@ -55,13 +66,19 @@ async function loadEdition() {
     }
 
     showBook(images, pageWidth, pageHeight);
-    message.textContent = "";
   } catch (err) {
     console.error(err);
     message.textContent = "No edition found for this date. Try another date.";
   }
+
+  loader.hidden = true; // hide the bar whether it worked or not
 }
 
+function showLoader(fraction, text) {
+  loader.hidden = false;
+  loaderFill.style.width = Math.round(fraction * 100) + "%";
+  loaderText.textContent = text;
+}
 // Turns one PDF page into an image
 async function pageToImage(pdf, pageNumber) {
   const page = await pdf.getPage(pageNumber);
@@ -83,6 +100,8 @@ async function pageToImage(pdf, pageNumber) {
 
 // ===== 4. THE FLIPBOOK =====
 function showBook(images, w, h) {
+  pageImages = images;
+
   const el = document.createElement("div");
   bookArea.appendChild(el);
 
@@ -100,6 +119,7 @@ function showBook(images, w, h) {
   });
 
   book.loadFromImages(images);
+  buildThumbs(images);
   book.on("flip", updatePageInfo);
   updatePageInfo();
 }
@@ -111,11 +131,24 @@ function clearBook() {
   }
   bookArea.innerHTML = "";
   pageInfo.textContent = "";
+  thumbs.innerHTML = ""; // ← add
 }
 
 function updatePageInfo() {
-  pageInfo.textContent =
-    "Page " + (book.getCurrentPageIndex() + 1) + " of " + book.getPageCount();
+  const current = book.getCurrentPageIndex();
+  pageInfo.textContent = "Page " + (current + 1) + " of " + book.getPageCount();
+
+  thumbs.querySelectorAll(".thumb").forEach(function (t, i) {
+    t.classList.toggle("active", i === current);
+  });
+
+  const active = thumbs.children[current];
+  if (active)
+    active.scrollIntoView({
+      block: "nearest",
+      inline: "center",
+      behavior: "smooth",
+    });
 }
 
 // ===== 5. BUTTONS =====
@@ -141,11 +174,86 @@ nextBtn.addEventListener("click", function () {
   if (book) book.flipNext();
 });
 
+// ===== ZOOM =====
+const zoomView = document.getElementById("zoomView");
+const zoomImg = document.getElementById("zoomImg");
+const zoomInfo = document.getElementById("zoomInfo");
+const zoomScroll = document.getElementById("zoomScroll");
+
+function openZoom() {
+  if (!book) return;
+  zoomPage = book.getCurrentPageIndex();
+  zoomLevel = 1;
+  showZoomPage();
+  zoomView.hidden = false;
+}
+
+function showZoomPage() {
+  zoomImg.src = pageImages[zoomPage];
+  zoomImg.style.width = zoomLevel * 100 + "%";
+  zoomInfo.textContent =
+    "Page " + (zoomPage + 1) + " · " + Math.round(zoomLevel * 100) + "%";
+}
+
+function changeZoom(step) {
+  zoomLevel = Math.min(4, Math.max(1, zoomLevel + step)); // stays between 100% and 400%
+  showZoomPage();
+}
+
+function moveZoomPage(step) {
+  const next = zoomPage + step;
+  if (next >= 0 && next < pageImages.length) {
+    zoomPage = next;
+    zoomScroll.scrollTo(0, 0);
+    showZoomPage();
+  }
+}
+
+function closeZoom() {
+  zoomView.hidden = true;
+  book.flip(zoomPage); // book jumps to the page you were reading
+}
+
+document.getElementById("zoomBtn").addEventListener("click", openZoom);
+document.getElementById("zoomIn").addEventListener("click", function () {
+  changeZoom(0.5);
+});
+document.getElementById("zoomOut").addEventListener("click", function () {
+  changeZoom(-0.5);
+});
+document.getElementById("zoomPrev").addEventListener("click", function () {
+  moveZoomPage(-1);
+});
+document.getElementById("zoomNext").addEventListener("click", function () {
+  moveZoomPage(1);
+});
+document.getElementById("zoomClose").addEventListener("click", closeZoom);
+
+// Keyboard: arrows work in both views, Esc closes zoom
 document.addEventListener("keydown", function (e) {
   if (!book) return;
-  if (e.key === "ArrowLeft") book.flipPrev();
-  if (e.key === "ArrowRight") book.flipNext();
+  if (!zoomView.hidden) {
+    if (e.key === "ArrowLeft") moveZoomPage(-1);
+    if (e.key === "ArrowRight") moveZoomPage(1);
+    if (e.key === "Escape") closeZoom();
+  } else {
+    if (e.key === "ArrowLeft") book.flipPrev();
+    if (e.key === "ArrowRight") book.flipNext();
+  }
 });
+function buildThumbs(images) {
+  thumbs.innerHTML = "";
+  images.forEach(function (src, i) {
+    const btn = document.createElement("button");
+    btn.className = "thumb";
+    btn.innerHTML =
+      '<img src="' + src + '" alt=""><span>' + (i + 1) + "</span>";
+    btn.addEventListener("click", function () {
+      book.flip(i);
+    });
+    thumbs.appendChild(btn);
+  });
+}
 
 // ===== 6. START: open today's edition for Region A =====
 loadEdition();

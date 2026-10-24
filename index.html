@@ -16,6 +16,10 @@
       </div>
     </header>
 
+    <div id="loader" hidden>
+      <div class="bar"><div id="loaderFill"></div></div>
+      <p id="loaderText">Loading…</p>
+    </div>
     <p id="message"></p>
 
     <div id="bookArea"></div>
@@ -24,8 +28,22 @@
       <button id="prevBtn">← Prev</button>
       <span id="pageInfo"></span>
       <button id="nextBtn">Next →</button>
+      <button id="zoomBtn">Zoom</button>
     </div>
-
+    <div id="thumbs"></div>
+    <div id="zoomView" hidden>
+      <div class="zoom-bar">
+        <button id="zoomOut">−</button>
+        <button id="zoomIn">+</button>
+        <span id="zoomInfo"></span>
+        <button id="zoomPrev">←</button>
+        <button id="zoomNext">→</button>
+        <button id="zoomClose">Close</button>
+      </div>
+      <div id="zoomScroll">
+        <img id="zoomImg" alt="Newspaper page" />
+      </div>
+    </div>
     <!-- PDF.js: opens PDFs and turns pages into images -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <!-- StPageFlip: the page-turn effect -->

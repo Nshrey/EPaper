@@ -1,0 +1,80 @@
+body {
+  font-family: Georgia, serif;
+  background-color: #f4f4f4;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  font-size: 48px;
+  color: #8b0005;
+  margin-bottom: 4px;
+}
+p {
+  color: #555;
+}
+button {
+  font-size: 18px;
+  padding: 10px 24px;
+  margin: 6px;
+  border: none;
+  border-radius: 6px;
+  background-color: #8b0000;
+  color: white;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+button:hover {
+  background-color: #b22222;
+}
+header {
+  margin-bottom: 12px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.region {
+  background-color: #999;
+}
+.region.active {
+  background-color: #8b0000;
+}
+
+input[type="date"] {
+  font-size: 16px;
+  padding: 9px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-family: inherit;
+}
+
+#message {
+  color: #555;
+  min-height: 20px;
+}
+
+#bookArea {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+#pageInfo {
+  min-width: 110px;
+  color: #555;
+}

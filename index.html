@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Utkarsh E-Paper</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Utkarsh</h1>
+      <div class="controls">
+        <button id="btnRegionA" class="region active">Region A</button>
+        <button id="btnRegionB" class="region">Region B</button>
+        <input type="date" id="datePicker" />
+      </div>
+    </header>
+
+    <p id="message"></p>
+
+    <div id="bookArea"></div>
+
+    <div class="nav">
+      <button id="prevBtn">← Prev</button>
+      <span id="pageInfo"></span>
+      <button id="nextBtn">Next →</button>
+    </div>
+
+    <!-- PDF.js: opens PDFs and turns pages into images -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- StPageFlip: the page-turn effect -->
+    <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+    <!-- Your code -->
+    <script src="js/app.js"></script>
+  </body>
+</html>

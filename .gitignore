@@ -1,0 +1,15 @@
+# Windows system files
+Thumbs.db
+desktop.ini
+
+# Mac system files
+.DS_Store
+
+# VS Code personal settings
+.vscode/
+
+# Secrets (for later: passwords, API keys)
+.env
+
+# Installed packages (for later, if we use npm)
+node_modules/

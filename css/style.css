@@ -1,64 +1,203 @@
+/* =====================================================================
+   Styles follow DESIGN.md (WIRED-inspired editorial system):
+   - black on white, no brand colour beyond black
+   - square corners everywhere, circles only for icon buttons
+   - no drop shadows; hairlines and black rules do the separating
+   - serif for the masthead, sans for every label and button
+   For branding later: change --accent (and --on-accent) only.
+   ===================================================================== */
+:root {
+  --accent: #000000;        /* colors.primary: buttons, active states */
+  --on-accent: #ffffff;     /* colors.on-primary: text on black */
+  --ink: #000000;           /* colors.ink: main text */
+  --muted: #757575;         /* colors.body: secondary text */
+  --hairline: #e0e0e0;      /* colors.hairline: thin dividers */
+  --canvas: #ffffff;        /* colors.canvas: header, controls */
+  --canvas-soft: #f5f5f5;   /* colors.canvas-soft: reading desk behind pages */
+
+  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-ui: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Georgia, serif;
-  background-color: #f4f4f4;
-  text-align: center;
   margin: 0;
-  padding: 20px;
-}
-
-h1 {
-  font-size: 48px;
-  color: #8b0005;
-  margin-bottom: 4px;
-}
-p {
-  color: #555;
-}
-button {
-  font-size: 18px;
-  padding: 10px 24px;
-  margin: 6px;
-  border: none;
-  border-radius: 6px;
-  background-color: #8b0000;
-  color: white;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-button:hover {
-  background-color: #b22222;
-}
-header {
-  margin-bottom: 12px;
-}
-
-.controls {
+  font-family: var(--font-ui);
+  color: var(--ink);
+  background: var(--canvas-soft);
+  min-height: 100vh;       /* footer sits at the bottom even on short pages */
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
 }
 
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: 0; /* DESIGN.md: square corners */
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* ===== Masthead (top bar) =====
+   A grid with 4 named areas. Laptops stack them centred:
+       brand / date line / regions + date button
+   Phones squeeze them into two rows (see the phone section). */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--canvas);
+  border-bottom: 4px double var(--ink); /* newspaper double rule */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "brand   brand"
+    "line    line"
+    "regions date";
+  column-gap: 12px;
+  padding: 12px 20px;
+}
+
+.masthead {
+  grid-area: brand;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.edition-line {
+  grid-area: line;
+  margin: 6px 0 12px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 0.2px;
+}
+
+.regions {
+  grid-area: regions;
+  justify-self: end;
+}
+
+.date-btn {
+  grid-area: date;
+  justify-self: start;
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.brand-name {
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+/* Region tabs: joined outline buttons, active one filled black */
+.regions {
+  display: flex;
+  border: 1px solid var(--ink);
+}
 .region {
-  background-color: #999;
+  background: var(--canvas);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  padding: 9px 18px;
+}
+.region + .region {
+  border-left: 1px solid var(--ink);
 }
 .region.active {
-  background-color: #8b0000;
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
-input[type="date"] {
-  font-size: 16px;
-  padding: 9px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-family: inherit;
+/* "Change date" button. The real date input covers it invisibly,
+   so a tap anywhere on the button opens the phone's own calendar. */
+.date-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--ink);
+  background: var(--canvas);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  padding: 9px 16px;
+  cursor: pointer;
+}
+.date-btn input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+}
+.date-btn:focus-within {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 
-#message {
-  color: #555;
-  min-height: 20px;
+/* ===== Reading area ===== */
+main {
+  flex: 1;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px 32px;
+}
+
+/* No edition for this date */
+#emptyState {
+  max-width: 420px;
+  margin: 56px auto;
+  padding: 32px 24px;
+  text-align: center;
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
+}
+#emptyState[hidden] {
+  display: none;
+}
+.empty-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  margin: 0 0 8px;
+}
+.empty-text {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0 0 20px;
+}
+.outline-btn {
+  background: var(--canvas);
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  padding: 11px 20px;
 }
 
 #bookArea {
@@ -66,23 +205,155 @@ input[type="date"] {
   margin: 0 auto;
 }
 
+/* Loading bar: thin black line */
+#loader {
+  max-width: 320px;
+  margin: 72px auto;
+  text-align: center;
+}
+#loader[hidden] {
+  display: none;
+}
+.bar {
+  height: 3px;
+  background: var(--hairline);
+  overflow: hidden;
+}
+#loaderFill {
+  height: 100%;
+  width: 0%;
+  background: var(--ink);
+  transition: width 0.3s;
+}
+#loaderText {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+/* ===== Page controls ===== */
 .nav {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 16px;
-  margin-top: 16px;
+  gap: 12px;
+  margin-top: 20px;
+}
+.nav[hidden] {
+  display: none;
+}
+
+/* DESIGN.md: circles are only for icon buttons */
+.icon-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--canvas);
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  font-size: 24px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+}
+.icon-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
 }
 
 #pageInfo {
-  min-width: 110px;
-  color: #555;
+  min-width: 96px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
 }
+
+.zoom-btn {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 12px 20px;
+}
+
+/* ===== Thumbnails ===== */
+#thumbs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  max-width: 1000px;
+  margin: 20px auto 0;
+  padding: 12px 4px 4px;
+  border-top: 1px solid var(--hairline);
+}
+.thumb {
+  flex: 0 0 auto;
+  width: 64px;
+  padding: 0;
+  background: none;
+  border: 2px solid transparent;
+  color: var(--muted);
+  font-size: 12px;
+}
+.thumb img {
+  width: 100%;
+  display: block;
+}
+.thumb.active {
+  border-color: var(--ink);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* Hover only on devices with a mouse */
+@media (hover: hover) {
+  .icon-btn:not(:disabled):hover {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+  .zoom-btn:hover {
+    background: var(--canvas);
+    color: var(--ink);
+    box-shadow: inset 0 0 0 1px var(--ink);
+  }
+  .region:not(.active):hover,
+  .date-btn:hover,
+  .outline-btn:hover {
+    background: var(--canvas-soft);
+  }
+  .thumb:not(.active):hover {
+    border-color: var(--hairline);
+  }
+}
+
+/* ===== Footer: black band ===== */
+.footer {
+  background: var(--accent);
+  color: var(--on-accent);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px 24px;
+  padding: 32px 20px;
+  font-size: 14px;
+}
+.footer-name {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* ===== Zoom screen ===== */
 #zoomView {
   position: fixed;
   inset: 0;
-  background: #222;
   z-index: 100;
+  background: #111111;
   display: flex;
   flex-direction: column;
 }
@@ -97,108 +368,91 @@ input[type="date"] {
   align-items: center;
   gap: 8px;
   padding: 8px;
-  background: #111;
-  color: white;
+  background: #000000;
+  border-bottom: 1px solid #333333;
+}
+.zoom-bar button {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  min-width: 40px;
+  padding: 7px 12px;
+}
+#zoomClose {
+  background: #ffffff;
+  color: #000000;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+#zoomInfo {
+  color: #bdbdbd;
+  font-size: 13px;
+  min-width: 110px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 #zoomScroll {
   flex: 1;
-  overflow: auto; /* lets you scroll around a zoomed page */
+  overflow: auto;
 }
-
 #zoomImg {
   display: block;
   margin: 0 auto;
-  max-width: none; /* allows the image to grow past the screen */
-}
-#loader {
-  max-width: 320px;
-  margin: 40px auto;
-}
-#loader[hidden] {
-  display: none;
+  max-width: none;
 }
 
-.bar {
-  height: 8px;
-  background: #ddd;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-#loaderFill {
-  height: 100%;
-  width: 0%;
-  background: #8b0000;
-  transition: width 0.3s; /* makes the bar slide smoothly */
-}
-
-#loaderText {
-  color: #555;
-  font-size: 14px;
-}
-#thumbs {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto; /* scroll sideways when there are many pages */
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 12px 4px;
-}
-
-.thumb {
-  flex: 0 0 auto; /* don't shrink thumbnails */
-  width: 70px;
-  padding: 0;
-  margin: 0;
-  background: none;
-  border: 2px solid transparent;
-  border-radius: 4px;
-  color: #555;
-  font-size: 12px;
-}
-.thumb:hover {
-  background: none;
-  border-color: #ccc;
-}
-.thumb.active {
-  border-color: #8b0000;
-  color: #8b0000;
-}
-.thumb img {
-  width: 100%;
-  display: block;
-}
-/* Buttons never break onto two lines */
-.nav button {
-  white-space: nowrap;
-}
-
-/* Phone screens */
+/* ===== Phones ===== */
 @media (max-width: 600px) {
-  body {
-    padding: 10px;
+  /* Two compact rows:   Utkarsh ............ [Ambala|Region B]
+                          Ambala edition · date ... [Change date] */
+  .topbar {
+    position: static; /* on phones, let the header scroll away to free up space */
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "brand regions"
+      "line  date";
+    align-items: center;
+    row-gap: 8px;
+    padding: 10px 12px;
   }
-  h1 {
-    font-size: 32px;
+  .masthead {
+    align-items: flex-start;
   }
-
-  .nav {
-    gap: 6px;
-    flex-wrap: wrap;
+  .eyebrow {
+    display: none; /* saves a line; the date line already says "edition" */
   }
-  .nav button {
-    font-size: 15px;
-    padding: 8px 12px;
+  .brand-name {
+    font-size: 28px;
+  }
+  .edition-line {
     margin: 0;
+    text-align: left;
+    font-size: 12px;
+    line-height: 1.3;
   }
-  #pageInfo {
-    min-width: 0;
-    font-size: 14px;
+  .regions,
+  .date-btn {
+    justify-self: end;
   }
-}
-@media (hover: hover) {
-  button:hover {
-    background-color: #b22222;
+  .region {
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+  .date-btn {
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+  main {
+    padding: 14px 10px 24px;
+  }
+  .nav {
+    gap: 8px;
+  }
+  .footer {
+    padding: 24px 16px;
   }
 }

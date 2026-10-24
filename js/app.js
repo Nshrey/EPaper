@@ -5,20 +5,26 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 const btnA = document.getElementById("btnRegionA");
 const btnB = document.getElementById("btnRegionB");
 const datePicker = document.getElementById("datePicker");
-const message = document.getElementById("message");
+const editionLine = document.getElementById("editionLine");
+const emptyState = document.getElementById("emptyState");
+const emptyText = document.getElementById("emptyText");
+const prevDayBtn = document.getElementById("prevDayBtn");
 const bookArea = document.getElementById("bookArea");
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
 const pageInfo = document.getElementById("pageInfo");
 const thumbs = document.getElementById("thumbs");
+const nav = document.getElementById("nav");
 
-let currentRegion = "region-a"; // which region is selected
+let currentRegion = "region-a"; // which region folder is selected
+let currentRegionName = "Ambala"; // the name readers see
 let book = null; // the flipbook currently on screen
 let pageImages = []; // all page images, kept for zoom
 let zoomPage = 0; // which page is zoomed
 let zoomLevel = 1; // 1 = fit width, 2 = double, etc.
 
-// ===== 2. DATE HELPER (your code from before, as a reusable function) =====
+// ===== 2. DATE HELPERS =====
+// Date -> "2026-10-24" (the format used in file names)
 function formatDate(d) {
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, "0");
@@ -26,9 +32,29 @@ function formatDate(d) {
   return year + "-" + month + "-" + day;
 }
 
+// "2026-10-24" -> Date
+function parseDate(text) {
+  const parts = text.split("-"); // ["2026", "10", "24"]
+  return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+}
+
+// Date -> "Saturday, 24 October 2026" (the format readers see)
+const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const MONTHS = ["January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"];
+
+function readableDate(d) {
+  return DAYS[d.getDay()] + ", " + d.getDate() + " " + MONTHS[d.getMonth()] + " " + d.getFullYear();
+}
+
 // Date picker starts on today, and can't go into the future
 datePicker.value = formatDate(new Date());
 datePicker.max = datePicker.value;
+
+// The date line under the masthead: "Ambala edition · Saturday, 24 October 2026"
+function updateEditionLine() {
+  editionLine.textContent = currentRegionName + " edition · " + readableDate(parseDate(datePicker.value));
+}
 
 // ===== 3. LOAD AN EDITION =====
 const loader = document.getElementById("loader");
@@ -38,7 +64,8 @@ const loaderText = document.getElementById("loaderText");
 async function loadEdition() {
   const pdfPath = "editions/" + currentRegion + "/" + datePicker.value + ".pdf";
   clearBook();
-  message.textContent = "";
+  updateEditionLine();
+  emptyState.hidden = true;
   showLoader(0, "Opening paper…");
 
   try {
@@ -53,10 +80,7 @@ async function loadEdition() {
       pageHeight = 0;
 
     for (let i = 1; i <= pdf.numPages; i++) {
-      showLoader(
-        (i - 1) / pdf.numPages,
-        "Loading page " + i + " of " + pdf.numPages,
-      );
+      showLoader((i - 1) / pdf.numPages, "Loading page " + i + " of " + pdf.numPages);
       const result = await pageToImage(pdf, i);
       images.push(result.image);
       if (i === 1) {
@@ -68,7 +92,9 @@ async function loadEdition() {
     showBook(images, pageWidth, pageHeight);
   } catch (err) {
     console.error(err);
-    message.textContent = "No edition found for this date. Try another date.";
+    emptyText.textContent =
+      "There's no " + currentRegionName + " edition for " + readableDate(parseDate(datePicker.value)) + ".";
+    emptyState.hidden = false;
   }
 
   loader.hidden = true; // hide the bar whether it worked or not
@@ -79,11 +105,12 @@ function showLoader(fraction, text) {
   loaderFill.style.width = Math.round(fraction * 100) + "%";
   loaderText.textContent = text;
 }
+
 // Turns one PDF page into an image
 async function pageToImage(pdf, pageNumber) {
   const page = await pdf.getPage(pageNumber);
   const base = page.getViewport({ scale: 1 });
-  const viewport = page.getViewport({ scale: 1200 / base.width }); // ~1200px wide = sharp
+  const viewport = page.getViewport({ scale: 1600 / base.width }); // ~1600px wide = sharp when zoomed
   const canvas = document.createElement("canvas");
   canvas.width = viewport.width;
   canvas.height = viewport.height;
@@ -119,8 +146,10 @@ function showBook(images, w, h) {
   });
 
   book.loadFromImages(images);
+  nav.hidden = false;
   buildThumbs(images);
   book.on("flip", updatePageInfo);
+  book.on("changeOrientation", updatePageInfo); // phone rotated, window resized
   updatePageInfo();
 }
 
@@ -131,29 +160,54 @@ function clearBook() {
   }
   bookArea.innerHTML = "";
   pageInfo.textContent = "";
-  thumbs.innerHTML = ""; // ← add
+  thumbs.innerHTML = "";
+  prevBtn.disabled = true;
+  nextBtn.disabled = true;
+  nav.hidden = true; // no paper, no page controls
 }
 
 function updatePageInfo() {
   const current = book.getCurrentPageIndex();
-  pageInfo.textContent = "Page " + (current + 1) + " of " + book.getPageCount();
+  const count = book.getPageCount();
+
+  // On a laptop the book shows two pages side by side (except the front and back page)
+  const twoPages = book.getOrientation() === "landscape" && current > 0 && current < count - 1;
+  const lastVisible = twoPages ? current + 1 : current;
+
+  pageInfo.textContent = twoPages
+    ? "Pages " + (current + 1) + "–" + (lastVisible + 1) + " of " + count
+    : "Page " + (current + 1) + " of " + count;
+
+  // Dim the arrows when there's nowhere to go
+  prevBtn.disabled = current === 0;
+  nextBtn.disabled = lastVisible >= count - 1;
 
   thumbs.querySelectorAll(".thumb").forEach(function (t, i) {
-    t.classList.toggle("active", i === current);
+    t.classList.toggle("active", i >= current && i <= lastVisible);
   });
 
   const active = thumbs.children[current];
   if (active)
-    active.scrollIntoView({
-      block: "nearest",
-      inline: "center",
-      behavior: "smooth",
+    active.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
+}
+
+function buildThumbs(images) {
+  thumbs.innerHTML = "";
+  images.forEach(function (src, i) {
+    const btn = document.createElement("button");
+    btn.className = "thumb";
+    btn.innerHTML = '<img src="' + src + '" alt=""><span>' + (i + 1) + "</span>";
+    btn.addEventListener("click", function () {
+      book.flip(i);
     });
+    thumbs.appendChild(btn);
+  });
 }
 
 // ===== 5. BUTTONS =====
 function setRegion(region, button) {
   currentRegion = region;
+  currentRegionName = button.textContent;
   btnA.classList.remove("active");
   btnB.classList.remove("active");
   button.classList.add("active");
@@ -166,7 +220,25 @@ btnA.addEventListener("click", function () {
 btnB.addEventListener("click", function () {
   setRegion("region-b", btnB);
 });
+
 datePicker.addEventListener("change", loadEdition);
+// On laptops, open the calendar wherever the button is clicked
+datePicker.addEventListener("click", function () {
+  try {
+    datePicker.showPicker();
+  } catch (e) {
+    // older browsers: the normal date input still works
+  }
+});
+
+// "Try the previous day": move the date back by one and load again
+prevDayBtn.addEventListener("click", function () {
+  const d = parseDate(datePicker.value);
+  d.setDate(d.getDate() - 1);
+  datePicker.value = formatDate(d);
+  loadEdition();
+});
+
 prevBtn.addEventListener("click", function () {
   if (book) book.flipPrev();
 });
@@ -191,8 +263,7 @@ function openZoom() {
 function showZoomPage() {
   zoomImg.src = pageImages[zoomPage];
   zoomImg.style.width = zoomLevel * 100 + "%";
-  zoomInfo.textContent =
-    "Page " + (zoomPage + 1) + " · " + Math.round(zoomLevel * 100) + "%";
+  zoomInfo.textContent = "Page " + (zoomPage + 1) + " · " + Math.round(zoomLevel * 100) + "%";
 }
 
 function changeZoom(step) {
@@ -241,19 +312,6 @@ document.addEventListener("keydown", function (e) {
     if (e.key === "ArrowRight") book.flipNext();
   }
 });
-function buildThumbs(images) {
-  thumbs.innerHTML = "";
-  images.forEach(function (src, i) {
-    const btn = document.createElement("button");
-    btn.className = "thumb";
-    btn.innerHTML =
-      '<img src="' + src + '" alt=""><span>' + (i + 1) + "</span>";
-    btn.addEventListener("click", function () {
-      book.flip(i);
-    });
-    thumbs.appendChild(btn);
-  });
-}
 
-// ===== 6. START: open today's edition for Region A =====
+// ===== 6. START: open today's edition for the first region =====
 loadEdition();

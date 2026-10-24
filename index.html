@@ -4,51 +4,81 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Utkarsh E-Paper</title>
+    <!-- Fonts from DESIGN.md: Playfair Display (masthead), Inter (labels and buttons) -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:wght@400;700&display=swap"
+    />
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
-    <header>
-      <h1>Utkarsh</h1>
-      <div class="controls">
-        <button id="btnRegionA" class="region active">Region A</button>
-        <button id="btnRegionB" class="region">Region B</button>
-        <input type="date" id="datePicker" />
+    <!-- Header: a grid, so phones and laptops can arrange the same 4 pieces differently -->
+    <header class="topbar">
+      <div class="masthead">
+        <span class="eyebrow">E-Paper</span>
+        <span class="brand-name">Utkarsh</span>
       </div>
+
+      <p id="editionLine" class="edition-line"></p>
+
+      <div class="regions">
+        <button id="btnRegionA" class="region active">Ambala</button>
+        <button id="btnRegionB" class="region">Region B</button>
+      </div>
+
+      <!-- The real date input sits invisibly on top of this button -->
+      <label class="date-btn">
+        Change date
+        <input type="date" id="datePicker" aria-label="Choose edition date" />
+      </label>
     </header>
 
-    <div id="loader" hidden>
-      <div class="bar"><div id="loaderFill"></div></div>
-      <p id="loaderText">Loading…</p>
-    </div>
-    <p id="message"></p>
+    <main>
+      <div id="loader" hidden>
+        <div class="bar"><div id="loaderFill"></div></div>
+        <p id="loaderText">Loading…</p>
+      </div>
 
-    <div id="bookArea"></div>
+      <!-- Shown when there's no PDF for the chosen region and date -->
+      <div id="emptyState" hidden>
+        <p class="empty-title">No edition found</p>
+        <p id="emptyText" class="empty-text"></p>
+        <button id="prevDayBtn" class="outline-btn">Try the previous day</button>
+      </div>
 
-    <div class="nav">
-      <button id="prevBtn">← Prev</button>
-      <span id="pageInfo"></span>
-      <button id="nextBtn">Next →</button>
-      <button id="zoomBtn">Zoom</button>
-    </div>
-    <div id="thumbs"></div>
+      <div id="bookArea"></div>
+
+      <div class="nav" id="nav" hidden>
+        <button id="prevBtn" class="icon-btn" aria-label="Previous page" disabled>‹</button>
+        <span id="pageInfo"></span>
+        <button id="nextBtn" class="icon-btn" aria-label="Next page" disabled>›</button>
+        <button id="zoomBtn" class="zoom-btn">Zoom</button>
+      </div>
+
+      <div id="thumbs"></div>
+    </main>
+
+    <footer class="footer">
+      <span class="footer-name">Utkarsh</span>
+      <span>Daily e-paper · Ambala and Region B editions</span>
+    </footer>
+
     <div id="zoomView" hidden>
       <div class="zoom-bar">
-        <button id="zoomOut">−</button>
-        <button id="zoomIn">+</button>
+        <button id="zoomOut" aria-label="Zoom out">−</button>
+        <button id="zoomIn" aria-label="Zoom in">+</button>
         <span id="zoomInfo"></span>
-        <button id="zoomPrev">←</button>
-        <button id="zoomNext">→</button>
+        <button id="zoomPrev" aria-label="Previous page">‹</button>
+        <button id="zoomNext" aria-label="Next page">›</button>
         <button id="zoomClose">Close</button>
       </div>
       <div id="zoomScroll">
         <img id="zoomImg" alt="Newspaper page" />
       </div>
     </div>
-    <!-- PDF.js: opens PDFs and turns pages into images -->
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <!-- StPageFlip: the page-turn effect -->
     <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
-    <!-- Your code -->
     <script src="js/app.js"></script>
   </body>
 </html>

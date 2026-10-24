@@ -169,3 +169,36 @@ input[type="date"] {
   width: 100%;
   display: block;
 }
+/* Buttons never break onto two lines */
+.nav button {
+  white-space: nowrap;
+}
+
+/* Phone screens */
+@media (max-width: 600px) {
+  body {
+    padding: 10px;
+  }
+  h1 {
+    font-size: 32px;
+  }
+
+  .nav {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .nav button {
+    font-size: 15px;
+    padding: 8px 12px;
+    margin: 0;
+  }
+  #pageInfo {
+    min-width: 0;
+    font-size: 14px;
+  }
+}
+@media (hover: hover) {
+  button:hover {
+    background-color: #b22222;
+  }
+}
